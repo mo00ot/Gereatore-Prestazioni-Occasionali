@@ -4,6 +4,11 @@ Riproduce l'impaginazione del modulo Word originale disegnando il PDF
 direttamente con fpdf2 (nessun bisogno di Word o LibreOffice).
 """
 
+from pathlib import Path
+
+FONT = "LiberationSans"  # stesse misure di Arial/Helvetica, licenza SIL OFL
+CARTELLA_FONT = Path(__file__).resolve().parent / "font"
+
 # Impaginazione (mm) ricavata dal .docx: margini 1" sopra/sotto, 1,25" ai lati
 MARGINE_SX = 31.75
 MARGINE_DX = 31.75
@@ -33,13 +38,15 @@ def _nuovo_pdf(numero, anno):
     from fpdf import FPDF
 
     pdf = FPDF(format="A4", unit="mm")
-    pdf.core_fonts_encoding = "windows-1252"  # serve per € e ’
+    # Font incorporato nel PDF: il risultato è identico su ogni lettore PDF
+    pdf.add_font(FONT, "", CARTELLA_FONT / "LiberationSans-Regular.ttf")
+    pdf.add_font(FONT, "B", CARTELLA_FONT / "LiberationSans-Bold.ttf")
     pdf.set_margins(MARGINE_SX, MARGINE_SU, MARGINE_DX)
     pdf.set_auto_page_break(True, 25.4)
     pdf.add_page()
 
     # Intestazione: numero a sinistra, anno a destra
-    pdf.set_font("Helvetica", size=CORPO)
+    pdf.set_font(FONT, size=CORPO)
     pdf.set_xy(MARGINE_SX, 12.7)
     larghezza = pdf.w - MARGINE_SX - MARGINE_DX
     pdf.cell(larghezza / 2, 5, f"N° {numero}")
@@ -49,15 +56,15 @@ def _nuovo_pdf(numero, anno):
 
 
 def _riga_etichetta(pdf, etichetta, valore):
-    pdf.set_font("Helvetica", "B", CORPO)
+    pdf.set_font(FONT, "B", CORPO)
     pdf.write(INTERLINEA, etichetta + " ")
-    pdf.set_font("Helvetica", "", CORPO)
+    pdf.set_font(FONT, "", CORPO)
     pdf.write(INTERLINEA, valore or "")
     pdf.ln(INTERLINEA)
 
 
 def _titoletto(pdf, testo):
-    pdf.set_font("Helvetica", "", CORPO)
+    pdf.set_font(FONT, "", CORPO)
     pdf.set_x(MARGINE_SX + RIENTRO)
     pdf.cell(0, INTERLINEA, testo)
     pdf.ln(INTERLINEA + 3)
@@ -106,7 +113,7 @@ def genera(percorso_pdf, prestatore, cliente, ricevuta, firma=None):
 
     # Titolo
     pdf.ln(8)
-    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_font(FONT, "B", 14)
     pdf.set_text_color(*BLU_TITOLO)
     pdf.cell(0, 7, "Ricevuta per Prestazione Occasionale")
     pdf.set_text_color(0, 0, 0)
@@ -127,7 +134,7 @@ def genera(percorso_pdf, prestatore, cliente, ricevuta, firma=None):
     pdf.ln(INTERLINEA + 3)
 
     _titoletto(pdf, "Descrizione della prestazione:")
-    pdf.set_font("Helvetica", "", CORPO)
+    pdf.set_font(FONT, "", CORPO)
     pdf.set_left_margin(MARGINE_SX + 2 * RIENTRO)
     pdf.set_x(MARGINE_SX + 2 * RIENTRO)
     pdf.multi_cell(0, INTERLINEA, ricevuta.get("descrizione", "").strip(), align="L")
@@ -146,14 +153,14 @@ def genera(percorso_pdf, prestatore, cliente, ricevuta, firma=None):
         ("Totale netto da corrispondere (€):", euro(netto)),
     ]
     for etichetta, valore in righe:
-        pdf.set_font("Helvetica", "", CORPO)
+        pdf.set_font(FONT, "", CORPO)
         pdf.cell(COLONNA_VALORI, INTERLINEA, etichetta)
-        pdf.set_font("Helvetica", "B" if etichetta.startswith("Totale") else "", CORPO)
+        pdf.set_font(FONT, "B" if etichetta.startswith("Totale") else "", CORPO)
         pdf.cell(0, INTERLINEA, valore)
         pdf.ln(INTERLINEA + 2.5)
     pdf.ln(INTERLINEA + 2)
 
-    pdf.set_font("Helvetica", "", CORPO)
+    pdf.set_font(FONT, "", CORPO)
     pdf.multi_cell(0, INTERLINEA, DICHIARAZIONE, align="L")
     pdf.ln(INTERLINEA * 2)
 

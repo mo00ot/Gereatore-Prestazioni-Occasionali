@@ -19,8 +19,8 @@ jobs:
             nome: Ricevute-Linux
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - if: runner.os == 'Linux'
@@ -29,11 +29,11 @@ jobs:
       - run: >
           pyinstaller --noconfirm --clean --windowed
           ${{ runner.os == 'macOS' && '--onedir' || '--onefile' }}
-          --name Ricevute --exclude-module pydoc
+          --name Ricevute --add-data "font:font" --exclude-module pydoc
           --exclude-module numpy ricevute.py
       - if: runner.os == 'macOS'
         run: cd dist && ditto -c -k --keepParent Ricevute.app Ricevute-macOS-arm64.zip && rm -rf Ricevute Ricevute.app
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.nome }}
           path: dist/*

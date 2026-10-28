@@ -53,3 +53,4 @@ python3 ricevute.py
 
 - `ricevute.py`: interfaccia (Tkinter, già incluso in Python)
 - `genera_pdf.py`: disegna il PDF (fpdf2)
+- `font/`: font Liberation Sans incorporato nei PDF (licenza SIL OFL, vedi `font/OFL.txt`)
